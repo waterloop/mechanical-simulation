@@ -1,0 +1,80 @@
+//Thrust
+=C20*(C84*C84)*C75/((1/(C23*C23*C68*C68)+1)*C23*C33)
+
+m = #ofphases
+I_1 = InputCurrent
+R_2 = Per-phase stator resistance
+S = Slipping Percent
+G = Goodness Factor
+v_s = synchronous velocity
+
+m*(I_1*I_1)*R_2/((1/(S*S*G*G)+1)*S*v_s)
+
+
+
+//Goodness Factor
+=2*C11*C28*C39*C39/(PI()*C66*(C12/C26))
+
+f = source frequency
+tau = pole pitch
+g_c = equivalent air gap
+rho_r = volume resistivity of Al
+d = rail conductor thickness
+mu_0 = permeability of air
+
+2*mu_0*f*tau*tau/(pi*g_c*(rho_r/d))
+
+
+
+//Synchronous Velocity (v_s)
+=C29/(1-C23)
+
+v_r = desired rotor velocity
+W_s = Core Width
+
+v_r/(1-W_s)
+
+
+
+//Slipping Percent
+Variable
+
+
+
+//Per-phase stator resistance (R_2)
+=C74/C68
+
+X_m = Per-phase magnetizing reactance
+G = Goodness Factor
+
+X_m/G
+
+
+
+//Input Current (I_1)
+=C36/sqrt(C81*C81+C82*C82)
+
+V_1 = RMS Voltage
+Re(Z) = Re(Z)
+Im(Z) = "
+
+=V_1/SQRT(Re(Z)*Re(Z)+Im(Z)*Im(Z))
+
+
+
+//#ofphases (m)
+Variable
+
+
+
+//Pole pitch (tau)
+=C33/(2*C28)
+
+v_s = synchronous velocity
+f = source frequency
+
+v_s/(2*f)
+
+
+//Are we supposed to simulate the electro system?
+//How does setting the variables work
