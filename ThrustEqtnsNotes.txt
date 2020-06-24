@@ -76,5 +76,4 @@ f = source frequency
 v_s/(2*f)
 
 
-//Are we supposed to simulate the electro system?
-//How does setting the variables work
+
