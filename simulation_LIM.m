@@ -1,78 +1,61 @@
 % SLIM Design Using a Matlab Program
 clear all;
 clc;
+
 %Assign necessary constants and parameters
-mu0 = 4*pi*10^-7;
-rhow = 1.72*10^-8;
-rhor = 2.82*10^-8;
-btmax = 1.6;
-bymax = 1.3;
-J1 = 4e6;
+mu0 = 4*pi*10^-7;  %permeability of air
+rhow = 1.72*10^-8; %volume resistivity of copper
+rhor = 2.82*10^-8; %volume resistivity of aluminum
+btmax = 1.6;       %max tooth flux density
+bymax = 1.3;       %max yoke flux density
+J1 = 4e6;          %rotor current density
 
 %Assign desired values for certain variables
-d = 0.00635; %input('Enter Aluminum thickness (in meters) = ');
-m = 3; %input('Enter the number of phases = ');
-Vline = 160; %input('Enter the primary line to line voltage = ');
-V1 = Vline/sqrt(3);
-f = 120; %input('Enter the supply frequency = ');
-p = 4; %input('Enter the number of poles = ');
-q1 = 1; %input('Enter the number of slots per pole per phase= ');
-Srated = 0.1; %input('Enter the rated slip = ');
-Ws = 0.005; %input('Enter the width of the stator = ');
+d = 0.00635;        %aluminum thickness/rail conductor thickness
+m = 3;              %number of phases
+Vline = 160;        %line voltage
+V1 = Vline/sqrt(3); %phase voltage
+f = 120;            %frequency 
+p = 4;              %number of poles
+q1 = 1;             %number of slots per pole per phase
+Srated = 0.1;       %rated slip/ slipping percent
+Ws = 0.005;         %width of the stator/ core width
 
 %Data from the PCP design procedure
-Fsprime = 30; %input('Enter the target thrust = ');
-Vcrated= 40; %input('Enter rated rotor velocity = '); 
+Fsprime = 30;       %target thrust
+Vcrated= 40;        %rated rotor velocity
 
-Vs= Vcrated/(1 - Srated);   %step d
-tau = Vs/(2*f);             %step e
-lambda = tau/(m*q1);        
-Ls = p*tau;
+Vs= Vcrated/(1 - Srated);   %synchronous velocity
+tau = Vs/(2*f);             %pole pitch
+lambda = tau/(m*q1);        %slot pitch
+Ls = p*tau;                 %length of one stator unit
 
 for i = 1:30
- N1 = p*q1*i;
- ncos0 = 0.2;
+ N1 = p*q1*i;               %number of turns per phase
+ ncos0 = 0.117930759127764; 
  ncos1(i) = 1;
  while abs(ncos0 - ncos1(i))>0.0001
 
-     I1prime = (Fsprime*Vcrated)/(m*V1*ncos0);
-     Aw = I1prime/J1;
-     As = (10*i*Aw)/7;
-     ws = lambda/2;
+     I1prime = (Fsprime*Vcrated)/(m*V1*ncos0);  %estimated rated stator RMS current
+     Aw = I1prime/J1;                           %differs
+     As = (10*i*Aw)/7;                          %differs
+     ws = lambda/2;                             
      wt = ws;
      hs = As/ws;
-     gm = 0.003;
-     go = gm + d;
+     gm = 0.003;                                %mech gap
+     go = gm + d;                               %magnetic air gap
      gamma = (4/pi)*(((ws/(2*go))*atan(ws/(2*go))) - log(sqrt(1 + ((ws/(2*go))^2))));
      kc = lambda/(lambda - gamma*go);
      ge = kc*go;
      kw = sin(pi/(2*m))/(q1*sin(pi/(2*m*q1)));
      G = 2*mu0*f*tau^2/(pi*(rhor/d)*ge);
 
-     %questions
-     a=pi/2;
-     ae=a+ge/2;
-     Lce=tau;
-     beta1=1;
-     lamda_s= (hs*(1+3*beta1))/(12*ws);
-     lamda_e= (0.3*(3*beta1-1)); 
-     lamda_d= 5*(ge/ws)/(5+4*(go/ws));
-
-     %corrections following spreadsheet
+     %corrections following original spreadsheet calculations
      a = ((hs/(3*ws))*(1+(3/p)))+((5*ge/ws)/(5+(4*go/ws)));
      R1(i) = 2*rhow*(pi+tau)*J1*N1/I1prime;
      X1(i) = 8*mu0*pi*f*((a*pi/q1)+(0.6*tau))*(N1^2)/p;
-     wse = ws +go;
-     Xm(i) = (24*mu0*pi*f*wse*kw*N1^2*tau)/(pi^2*p*ge);
+     Xm(i) = (24*mu0*pi*f*kw*N1^2*tau)/(pi^2*p*ge);
      R2(i) = Xm(i)/G;
-
-     %Equivalent Circuit Components
-     %R1(i)=rhow*(4*a+2*Lce)*J1*N1/I1prime;
-     %a1(i)=lamda_s*(1+3/p)+lamda_d;
-     %b1(i)=lamda_e*Lce;
-     %X1(i)=8*mu0*pi*f*((a1(i)*2*a/q1)+b1(i))*N1^2/p;
-     %Xm(i)= (48*mu0*pi*f*ae*kw*N1^2*tau)/(pi^2*p*ge);
-     %R2(i) = Xm(i)/G;
 
      Z(i)=R1(i)+j*X1(i)+((j*R2(i)*Xm(i))/Srated)/((R2(i)/Srated) + j*Xm(i));
 
@@ -108,100 +91,104 @@ Fs = Fs(k);         %Thrust Force
 I1 = I1(k);         %Input Current
 ncos1 = ncos1(k);   %HELP > loops are confusing
 
-%Appendix A Wire Guage Table for Copper Wire
+%Appendix A Wire gauge Table for Copper Wire
 %AWG | Diameter in mm
-A=[3 5.8267;
-   4 5.1892;
-   5 4.6202;
-   6 4.1148;
-   7 3.6652;
-   8 3.2639;
-   9 2.90576;
-   10 2.58826]; 
+%{A=[3 5.8267;
+%   4 5.1892;
+%   5 4.6202;
+%   6 4.1148;
+%   7 3.6652;
+%   8 3.2639;
+%   9 2.90576;
+%   10 2.58826]; 
 
-guage=0;
+A = [14 1.62814;
+    15 1.45034;
+    16 1.29032;
+    17 1.15062;
+    18 1.02362;
+    19 0.91186;
+    20 0.8128;
+    21 0.7239]; 
+gauge=0;
 
-while (guage<8)
- guage=guage+1;
- pw = 0;
- r=0;
+while (gauge<8) %8 selection of wires in the [A], need to fix
+ gauge=gauge+1;
+ Np = 0;
+% r=0;
  wt = 1;
  wtmin= 0;
- g=0;r=0;
+% g=0;r=0;
  while (wt-wtmin)>0.0152 %what is this condition?
-     r=r+1;
-     g=g+1;
-     wire_d=A(guage,2);
-     pw = pw + 1;
-     ws = (wire_d*10^-3*pw) + 2.2*10^-3;
+%    r=r+1;
+%    g=g+1;
+     Dw=A(gauge,2);
+     Np = Np + 1;
+     ws = (Dw*10^-3*Np); %not taking into account the slot insulation factor 
      wt = lambda - ws;
-     Aw = pw*pi/4*wire_d^2*1e-6;
+     Aw = Np*pi/4*Dw^2*1e-6;
      As = (10*Nc*Aw)/7;
      hs = As/ws;
-     gm = 0.01;
+     gm = 0.003;
      go = gm + d;
      gamma=(4/pi)*(((ws/(2*go))*atan(ws/(2*go)))-log(sqrt(1 + ((ws/(2*go))^2))));
      kc = lambda/(lambda - gamma*go);
      ge = kc*go;
      G = 2*mu0*f*tau^2/(pi*(rhor/d)*ge);
      kw=sin(pi/(2*m))/(q1*sin(pi/(2*m*q1)));
-     a=pi/2;
-     ae=a+ge/2;
-     Lce=tau;
-     beta1=1;
-     lamda_s= (hs*(1+3*beta1))/(12*ws);
-     lamda_e= (0.3*(3*beta1-1));
-     lamda_d= 5*(ge/ws)/(5+4*(go/ws));
-
-     %Equivalent Circuit Components
-     R1=rhow*(4*a+2*Lce)*J1*N1/I1prime;
-     a1=lamda_s*(1+3/p)+lamda_d;
-     b1=lamda_e*Lce;
-     X1=8*mu0*pi*f*((a1*2*a/q1)+b1)*N1^2/p;
-     Xm=(48*mu0*pi*f*ae*kw*N1^2*tau)/(pi^2*p*ge);
+     
+     a = ((hs/(3*ws))*(1+(3/p)))+((5*ge/ws)/(5+(4*go/ws)));
+     R1 = 2*rhow*(pi+tau)*J1*N1/I1prime;
+     X1 = 8*mu0*pi*f*((a*pi/q1)+(0.6*tau))*(N1^2)/p;
+     Xm = (24*mu0*pi*f*kw*N1^2*tau)/(pi^2*p*ge);
      R2 = Xm/G;
+
      Z=R1+j*X1+(R2/Srated*j*Xm)/(R2/Srated+j*Xm);
      I1 = V1/abs(Z);
      I2 = j*I1*Xm/(R2/Srated+j*Xm);
      Im=I1-I2;
      wtmin=2*sqrt(2)*m*kw*N1*abs(Im)*mu0*lambda/(pi*p*ge*btmax);
+     J1actual=I1/Aw;
  end;
  hy=4*sqrt(2)*m*kw*N1*abs(Im)*mu0*Ls/(pi*pi*p*p*ge*bymax);
- para_wires(guage)=pw;
- slot_width(guage)=ws; 
-
- tooth_width(guage)=wt;
- min_toothwidth(guage)=wtmin;
- height_slot(guage)=hs;
- Area_wire(guage)=Aw;
- Area_slot(guage)=As;
- Num_c(guage)=Nc;
- Num_1(guage)=N1;
- Sta_I(guage)=I1;
- gap_e(guage)=ge;
- current_den(guage) = abs(I1)/Aw;
- height_yoke(guage)=4*sqrt(2)*m*kw*N1*(Im)*mu0*Ls/(pi*pi*p*p*ge*bymax);
- final_thrust(guage)=(m*abs(I1)^2*R2)/(((1/(Srated*G)^2)+1)*Vs*Srated);
- output(guage)=final_thrust(guage)*Vcrated;
- input(guage)=output(guage)+m*abs(I2)^2*R2+m*abs(I1)^2*R1;
- efficiency(guage)= output(guage)/input(guage);
- difference(guage)=final_thrust(guage)-Fsprime;
- diffmin(guage) = min(abs(difference));
+ para_wires(gauge)=Np;
+ slot_width(gauge)=ws; 
+ tooth_width(gauge)=wt;
+ min_toothwidth(gauge)=wtmin;
+ height_slot(gauge)=hs;
+ Area_wire(gauge)=Aw;
+ Area_slot(gauge)=As;
+ Num_c(gauge)=Nc;
+ Num_1(gauge)=N1;
+ Sta_I(gauge)=I1;
+ gap_e(gauge)=ge;
+ current_den(gauge) = abs(I1)/Aw;
+ height_yoke(gauge)=4*sqrt(2)*m*kw*N1*(Im)*mu0*Ls/(pi*pi*p*p*ge*bymax);
+ final_thrust(gauge)=(m*abs(I1)^2*R2)/(((1/(Srated*G)^2)+1)*Vs*Srated);
+ output(gauge)=final_thrust(gauge)*Vcrated;
+ input(gauge)=output(gauge)+m*abs(I2)^2*R2+m*abs(I1)^2*R1;
+ efficiency(gauge)= output(gauge)/input(gauge);
+ difference(gauge)=final_thrust(gauge)-Fsprime;
+ diffmin(gauge) = min(abs(difference));
 end;
+
 kk = min(diffmin);
 jj=1;
 
 while kk~=abs(diffmin(jj))
  jj = jj + 1;
 end;
-best_wireguage=A(jj,1)
+best_wiregauge=A(jj,1)
 %$$$ To Generate the Characteristic curves $$$
-vel_sta= 17.22; 
-
-slip= 0.1;
+vel_sta= Vs; 
 e=1;
+
 for slip=0.000001:0.01:1
+    
  vel_rot(e)=vel_sta*(1-slip);
+ if abs(Vcrated - vel_rot(e))/Vcrated < 0.01
+     n_Vr = e; %index for where v = Vr
+ end
  impz(e) = R1+j*X1+(R2/slip*j*Xm)/(R2/slip+j*Xm);
  i1(e) = V1/abs(impz(e));
  i2(e) = j*i1(e)*Xm/(R2/slip+j*Xm);
@@ -212,18 +199,31 @@ for slip=0.000001:0.01:1
  eff(e) = out_pow(e)/in_pow(e);
  e=e+1;
 end;
+
 figure(1);
 plot(vel_rot,Force,'green');
 hold on;
+grid on;
+grid minor
+ylabel('Target Thrust, Fs (N)')
+xlabel('Rotor Velocity, Vr (m/s)')
+plot([Vcrated Vcrated],[0,Fs])
 hold on;
-plot([40 40],[0,Fs]);
+plot([0 Vcrated],[Fs Fs]);
 hold on;
-plot([0 40],[Fs Fs]);
-hold on;
+title(['Force vs. Velocity'])
+legend('Actual Force','Target Velocity','Target Force')
+
 figure(2);
 plot(vel_rot,eff*100,'green');
 hold on;
-plot([40 40],[0 eta*100]);
+plot([Vcrated Vcrated],[0 eta*100]);
 hold on;
-plot([0 40],[eta*100,eta*100]);
+plot([0 Vcrated],[eta*100,eta*100]);
 hold on;
+grid on
+grid minor
+ylabel('Efficiency (%)')
+xlabel('Rotor Velocity, Vr (m/s)')
+title(['Efficiency vs. Velocity'])
+legend('Actual Efficiency','Target Velocity','Ideal Efficiency')
