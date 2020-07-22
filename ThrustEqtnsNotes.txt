@@ -76,4 +76,31 @@ f = source frequency
 v_s/(2*f)
 
 
+A_s = slot area
+=(10/7)*C46*C58
+=(10/7)*N_c*A_w
+
+
+
+V_1 = RMS Voltage
+=C27/sqrt(3
+=V_line / sqrt(3
+
+
+g_c = equivalent air gap
+=C65*C63
+=k_c * g_0
+
+k_c = Carteres Coefficient
+=C40/(C40-(C63*C64))
+=lambda / (lambda-(g_0*y))
+
+lambda = slot pitch
+=C39/(C20*C21)
+=tau/(m*q_1)
+
+y = ypsilon
+=(4/PI())*((C44/(2*C63))*ATAN(C44/(2*C63))-LOG10(SQRT(1+POWER(C44/(2*C63), 2))))
+=(4/PI())*((w_s/(2*g_0))*ATAN(w_s/(2*g_0))-LOG10(SQRT(1+POWER(w_s/(2*g_0), 2))))
+
 
